@@ -1,0 +1,441 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>证件管理</title>
+    <meta charset="UTF-8">
+    <script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.min.js"></script>
+    <style>
+        /* 基础样式 */
+        .container {
+            max-width: 1000px;
+            margin: 20px auto;
+            padding: 20px;
+        }
+        
+        /* 打印样式 */
+        @media print {
+            .no-print {
+                display: none !important;
+            }
+            .print-content {
+                display: block !important;
+            }
+            .badge {
+                page-break-after: always;
+                height: 90vh;
+                padding: 20px;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+            }
+            .badge-content {
+                flex-grow: 1;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+            }
+            .badge-qr {
+                margin-bottom: 40px;
+                text-align: center;
+            }
+            .badge-qr img {
+                width: 150px;
+                height: 150px;
+            }
+            .badge-qr-tip {
+                margin-top: 5px;
+                font-size: 14px;
+                color: #666;
+            }
+        }
+        
+        .print-content {
+            display: none;
+        }
+
+        /* 列表样式 */
+        .guest-list {
+            margin-top: 20px;
+        }
+        .guest-item {
+            padding: 8px;
+            border-bottom: 1px solid #eee;
+        }
+        .status-badge {
+            margin-left: 10px;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-size: 12px;
+        }
+        .status-printed {
+            background-color: #28a745;
+            color: white;
+        }
+        .status-not-printed {
+            background-color: #dc3545;
+            color: white;
+        }
+
+        /* 添加新样式 */
+        .filter-controls {
+            margin-bottom: 20px;
+            display: flex;
+            gap: 10px;
+        }
+        
+        .search-box {
+            padding: 8px;
+            width: 200px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        
+        .organization-group {
+            margin: 20px 0;
+            border: 1px solid #eee;
+            border-radius: 4px;
+        }
+        
+        .organization-header {
+            background-color: #f8f9fa;
+            padding: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .organization-header h3 {
+            margin: 0;
+        }
+        
+        .select-all-label {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        /* 添加权限相关样式 */
+        .permission-badge {
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-size: 12px;
+            margin-left: 10px;
+        }
+        .permission-allowed {
+            background-color: #28a745;
+            color: white;
+        }
+        .permission-denied {
+            background-color: #dc3545;
+            color: white;
+        }
+        .permission-toggle {
+            margin-left: 10px;
+            cursor: pointer;
+            padding: 2px 8px;
+            border: none;
+            border-radius: 3px;
+            background-color: #6c757d;
+            color: white;
+        }
+        .permission-toggle:hover {
+            background-color: #5a6268;
+        }
+    </style>
+</head>
+<body>
+    <!-- 管理界面 -->
+    <div class="container no-print">
+        <h2>证件管理</h2>
+        
+        <div class="filter-controls">
+            <input type="text" 
+                   id="searchInput" 
+                   class="search-box" 
+                   placeholder="搜索嘉宾姓名或单位..."
+                   onkeyup="filterGuests()">
+            <select id="printStatus" onchange="filterGuests()">
+                <option value="all">全部</option>
+                <option value="printed">已打印</option>
+                <option value="not_printed">未打印</option>
+            </select>
+            <button onclick="printSelectedBadges()">打印选中证件</button>
+        </div>
+        
+        <div id="guestList" class="guest-list"></div>
+    </div>
+
+    <!-- 打印区域 -->
+    <div id="printArea" class="print-content">
+        <!-- 打印内容将在这里生成 -->
+    </div>
+
+    <script>
+        let guestsList = [];
+        let organizationGroups = {};
+
+        // 加载嘉宾列表
+        async function loadGuests() {
+            try {
+                const response = await fetch('/api/guests');
+                const guests = await response.json();
+                guestsList = guests;
+                
+                // 按单位分组
+                organizationGroups = guests.reduce((groups, guest) => {
+                    const org = guest.organization;
+                    if (!groups[org]) {
+                        groups[org] = [];
+                    }
+                    groups[org].push(guest);
+                    return groups;
+                }, {});
+                
+                displayGuests();
+            } catch (error) {
+                console.error('加载嘉宾列表失败:', error);
+            }
+        }
+
+        // 显示嘉宾列表
+        function displayGuests() {
+            const container = document.getElementById('guestList');
+            container.innerHTML = Object.entries(organizationGroups)
+                .map(([org, guests]) => `
+                    <div class="organization-group">
+                        <div class="organization-header">
+                            <h3>${org}</h3>
+                            <div>
+                                <label class="select-all-label">
+                                    <input type="checkbox" 
+                                           onchange="toggleOrganization('${org}')"
+                                           id="org_${org}">
+                                    选择全部
+                                </label>
+                                <button onclick="toggleOrgPermission('${org}')" class="permission-toggle">
+                                    设置整组权限
+                                </button>
+                            </div>
+                        </div>
+                        <div class="guest-items">
+                            ${guests.map(guest => `
+                                <div class="guest-item">
+                                    <input type="checkbox" 
+                                           id="guest_${guest.guest_id}" 
+                                           value="${guest.guest_id}">
+                                    <label for="guest_${guest.guest_id}">
+                                        ${guest.name}
+                                    </label>
+                                    <span class="status-badge ${guest.badge_printed ? 'status-printed' : 'status-not-printed'}">
+                                        ${guest.badge_printed ? '已打印' : '未打印'}
+                                    </span>
+                                    <span class="permission-badge ${guest.opening_ceremony ? 'permission-allowed' : 'permission-denied'}">
+                                        ${guest.opening_ceremony ? '允许参加开幕式' : '不可参加开幕式'}
+                                    </span>
+                                    <button onclick="togglePermission('${guest.guest_id}')" class="permission-toggle">
+                                        ${guest.opening_ceremony ? '取消权限' : '授予权限'}
+                                    </button>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                `).join('');
+        }
+
+        // 筛选嘉宾
+        function filterGuests() {
+            const searchText = document.getElementById('searchInput').value.toLowerCase();
+            const printStatus = document.getElementById('printStatus').value;
+            
+            // 从原始列表筛选
+            const filteredGroups = {};
+            Object.entries(guestsList.reduce((groups, guest) => {
+                const org = guest.organization;
+                if (!groups[org]) {
+                    groups[org] = [];
+                }
+                
+                // 应用筛选条件
+                const matchesSearch = (
+                    guest.name.toLowerCase().includes(searchText) ||
+                    guest.organization.toLowerCase().includes(searchText)
+                );
+                const matchesStatus = (
+                    printStatus === 'all' ||
+                    (printStatus === 'printed' && guest.badge_printed) ||
+                    (printStatus === 'not_printed' && !guest.badge_printed)
+                );
+                
+                if (matchesSearch && matchesStatus) {
+                    groups[org].push(guest);
+                }
+                
+                return groups;
+            }, {})).forEach(([org, guests]) => {
+                if (guests.length > 0) {
+                    filteredGroups[org] = guests;
+                }
+            });
+            
+            organizationGroups = filteredGroups;
+            displayGuests();
+        }
+
+        // 切换整个单位的选择状态
+        function toggleOrganization(org) {
+            const orgCheckbox = document.getElementById(`org_${org}`);
+            const guestCheckboxes = document.querySelectorAll(`input[id^="guest_"]`);
+            
+            guestCheckboxes.forEach(cb => {
+                const guestId = cb.value;
+                const guest = guestsList.find(g => g.guest_id === guestId);
+                if (guest && guest.organization === org) {
+                    cb.checked = orgCheckbox.checked;
+                }
+            });
+        }
+
+        // 生成二维码
+        function generateQRCode(text) {
+            const qr = qrcode(0, 'M');
+            qr.addData(text);
+            qr.make();
+            return qr.createImgTag(8); // 8 是二维码的尺寸
+        }
+        
+        // 修改打印函数
+        async function printSelectedBadges() {
+            const selectedCheckboxes = document.querySelectorAll('input[type="checkbox"]:checked');
+            const selectedGuests = Array.from(selectedCheckboxes)
+                .map(cb => cb.value)
+                .filter(id => id && id.startsWith('G'));
+            
+            if (selectedGuests.length === 0) {
+                alert('请选择要打印的嘉宾证件');
+                return;
+            }
+
+            // 检查重复打印
+            const reprintGuests = selectedGuests
+                .map(id => guestsList.find(g => g.guest_id === id))
+                .filter(guest => guest && guest.badge_printed);
+
+            if (reprintGuests.length > 0) {
+                const confirmReprint = confirm(
+                    `以下嘉宾证件将重复打印：\n${reprintGuests.map(g => g.name).join(', ')}\n是否继续？`
+                );
+                if (!confirmReprint) {
+                    return;
+                }
+            }
+
+            try {
+                // 准备打印内容
+                const printArea = document.getElementById('printArea');
+                printArea.innerHTML = selectedGuests.map(guestId => {
+                    const guest = guestsList.find(g => g.guest_id === guestId);
+                    if (!guest) return '';
+                    
+                    const qrUrl = `${window.location.origin}/guest_detail.html?id=${guest.guest_id}`;
+                    
+                    return `
+                        <div class="badge">
+                            <div class="badge-content">
+                                <h1 style="font-size: 36px; margin-bottom: 40px;">嘉宾证件</h1>
+                                <p style="font-size: 24px; margin: 20px 0;">姓名：${guest.name}</p>
+                                <p style="font-size: 24px; margin: 20px 0;">单位：${guest.organization}</p>
+                            </div>
+                            <div class="badge-qr">
+                                ${generateQRCode(qrUrl)}
+                                <div class="badge-qr-tip">扫描查看详细信息</div>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+
+                // 更新打印状态
+                const response = await fetch('/api/badges/print', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        guest_ids: selectedGuests,
+                        is_reprint: reprintGuests.length > 0
+                    })
+                });
+
+                if (response.ok) {
+                    // 触发打印
+                    window.print();
+                    
+                    // 重新加载嘉宾列表
+                    await loadGuests();
+                }
+            } catch (error) {
+                alert('打印失败');
+                console.error(error);
+            }
+        }
+
+        // 切换单个嘉宾的开幕式权限
+        async function togglePermission(guestId) {
+            try {
+                const response = await fetch('/api/guests/permission', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        guest_id: guestId,
+                        type: 'opening_ceremony'
+                    })
+                });
+
+                if (response.ok) {
+                    // 重新加载嘉宾列表以更新显示
+                    await loadGuests();
+                } else {
+                    throw new Error('更新权限失败');
+                }
+            } catch (error) {
+                alert('更新权限失败');
+                console.error(error);
+            }
+        }
+
+        // 切换整个单位的开幕式权限
+        async function toggleOrgPermission(org) {
+            const confirmMsg = `确定要修改 ${org} 所有嘉宾的开幕式权限吗？`;
+            if (!confirm(confirmMsg)) return;
+
+            try {
+                const response = await fetch('/api/guests/permission/organization', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        organization: org,
+                        type: 'opening_ceremony'
+                    })
+                });
+
+                if (response.ok) {
+                    await loadGuests();
+                } else {
+                    throw new Error('更新权限失败');
+                }
+            } catch (error) {
+                alert('更新组织权限失败');
+                console.error(error);
+            }
+        }
+
+        // 页面加载时获取嘉宾列表
+        loadGuests();
+    </script>
+</body>
+</html> 

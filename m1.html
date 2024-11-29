@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+    <meta charset="UTF-8">
+    <title>嘉宾信息管理系统</title>
+    <style>
+        .module {
+            display: none;
+        }
+    </style>
+    <script>
+        function showModule(moduleId) {
+            var modules = document.getElementsByClassName('module');
+            for (var i = 0; i < modules.length; i++) {
+                modules[i].style.display = 'none';
+            }
+            document.getElementById(moduleId).style.display = 'block';
+        }
+
+        function login() {
+            var userType = document.querySelector('input[name="userType"]:checked').value;
+            if (userType === 'guest') {
+                showModule('guestModules');
+            } else if (userType === 'staff') {
+                showModule('staffModules');
+            }
+        }
+
+        function showSubModule(parentModuleId, subModuleId) {
+            var parentModule = document.getElementById(parentModuleId);
+            var subModules = parentModule.getElementsByClassName('module');
+            for (var i = 0; i < subModules.length; i++) {
+                subModules[i].style.display = 'none';
+            }
+            document.getElementById(subModuleId).style.display = 'block';
+        }
+    </script>
+</head>
+<body>
+    <h1>嘉宾信息管理系统</h1>
+
+    <!-- 登录界面 -->
+    <div id="loginModule">
+        <h2>登录</h2>
+        <form onsubmit="login(); return false;">
+            <label for="username">用户名:</label>
+            <input type="text" id="username" name="username"><br><br>
+            
+            <label for="password">密码:</label>
+            <input type="password" id="password" name="password"><br><br>
+            
+            <label>用户类型:</label>
+            <input type="radio" id="guest" name="userType" value="guest">
+            <label for="guest">嘉宾</label>
+            <input type="radio" id="staff" name="userType" value="staff">
+            <label for="staff">工作人员</label><br><br>
+            
+            <input type="submit" value="登录">
+        </form>
+    </div>
+
+    <!-- 嘉宾模块 -->
+    <div id="guestModules" class="module">
+        <h2>嘉宾功能</h2>
+        <button onclick="showSubModule('guestModules', 'infoView')">信息查看</button>
+
+        <div id="infoView" class="module">
+            <h2>信息查看</h2>
+            <p>嘉宾ID: 12345</p>
+            <p>姓名: 张三</p>
+            <p>单位: 某某公司</p>
+            <p>职务: 总经理</p>
+            <p>联系方式: 123-456-7890</p>
+
+            <h3>日程安排</h3>
+            <table border="1">
+                <tr>
+                    <th>日期</th>
+                    <th>时间</th>
+                    <th>活动</th>
+                    <th>地点</th>
+                </tr>
+                <tr>
+                    <td>2023-10-01</td>
+                    <td>09:00 - 10:00</td>
+                    <td>开幕式</td>
+                    <td>大会堂</td>
+                </tr>
+                <tr>
+                    <td>2023-10-01</td>
+                    <td>10:30 - 12:00</td>
+                    <td>主题演讲</td>
+                    <td>会议室A</td>
+                </tr>
+                <tr>
+                    <td>2023-10-01</td>
+                    <td>14:00 - 16:00</td>
+                    <td>分组讨论</td>
+                    <td>会议室B</td>
+                </tr>
+            </table>
+
+            <h3>接待方案(高级)</h3>
+            <p>接待人员：李四</p>
+            <p>联系方式：987-654-3210</p>
+            <p>接待安排：嘉宾将在开幕式后由接待人员引导至会议室A进行主题演讲。</p>
+
+            <h3>接待方案(普通)</h3>
+            <p>请出示以下二维码以领取身份证明：</p>
+            <!-- base64 data:image/png;base64,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 -->
+            <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAQAAAAEACAYAAABccqhmAAAAAXNSR0IArs4c6QAAFzVJREFUeF7tnV2IVtX3x5cvMyqWRIk5ktGEpZZl5RDOhWYUM6MF2t1MkBelpPQCYth4YRd5MWqKIITGWBcGjl2lBPmSgSKkgpONCc6FOFLgjCIUoemYOn/21K/p+evMWXuds59zzvN89q3ftc8+3732x3We2WefYX19fX1CwwEcKEsHhgGAspx3bhoH+h0AACQCDpSxAwCgjCefW8cBAEAO4EAZOwAAynjyuXUcAADkAA6UsQMAoIwnn1vHAQBADuBAGTugAsDOnTvlyJEjZWyT/dYXLVok9fX1qg66urpkw4YNKq0TbdmyRSoqKlT67du3S3t7u0obUrRq1Sqprq5WXWL//v2ye/dulRZRoQNz5syR119/PdIWFQCWL18u27Zti+wMwZ0OtLS0SHNzs8qaY8eOSW1trUrrRNeuXZPRo0er9E1NTbJr1y6VNqTo6NGjMnv2bNUl1q1bJ6tXr1ZpERU6sGzZMtm6dWukLQAg0qJ4AgBQ6B8AiJdP2mgAoHUqsA4AAIDAKXbX7gFAGq7f5ZoAAACkkYoAIA3XAUCk6zwCRFqUiAAAJGJj/E6oAKgA4meRfw8AwN+zIBEAAAAESayITgFAGq7zCBDpOo8AkRYlIgAAidgYvxMqACqA+Fnk3wMA8PcsSAQAAABBEiurjwDjx4+XmpqaNO65aNd026KvXr2qup4PADo7O2XFihWqfp1oz549UllZqdKH2gk4fPhwqaurU43BiTZv3izTpk1T6X12Ao4dO1bc9tdSbidOnJDLly+rbjG1CqChoUH27t2rGmReRdOnTxe3WDXNBwCa/qyaUABwW5HdluQQzQcADipnzpwJMYzM9Dl//nzZt2+fajwAQGWTTQQABnwDALYcskQBAItrAWIAAAAIkFaRXQKASIuKIwAAAKA4mVZ4FQCQhut3uSYAAABppCIASMN1ADCk6/wGULykBADF83rIK1EBUAGkkYoAIA3XqQCoADKSdwAgIxNBBUAFkEYqAoA0XKcCoALISN4BgIxMBBUAFUAaqViSABg2bFgaXhZcc+LEidLd3a0eRygA+J4KrB6wiLS1tUljY6MqxJ0e7LYOa1pe/wpQVVUlPT09mlsMqunr61P3DwDUVvkJAUChXwDAL3/iqAEAFcC/+UMFULiUQr4MRAXwt9eJfxfA921AHgEGkh4AAIChqgkeAeLUWkPE8gjAI0Cg1IrslkcAHgF4BBhkmfAIUGgMFUAkT20CKgAqAFvmxI+iAqACoAKgAlCRhApAZZO/iAqACsA/a5KJoAKgAqACoAJQ0YQKQGWTv4gKgArAP2uSiaACoALIXAXgtkV3dHSoMvzmzZvy6aefqrROFOpYcN9TgdkI9PeUsRFIRKgA1Ov3DuH169dlzJgx6g5CfRoMABROQW6OBWcn4MDEZWUnoHo1iwgA8HHrTi2PADwCZO4RwCelAYCPWwDgDgeoAKgABltC7AQsdIa/AsSD7aDR/AZgN5YKwO6di+QRgEcAHgEGWUNUAFQA8fCqjKYCUBp1FxkVgN07KgD3d0gqACoAKgAVRfgNQGWTv4gKwN+z/0VQAdi9owKgAijIHvYBFC4mfgPgN4B4eFVG57UCWLp0qYwYMUJ1l2+99ZbU1NSotGfPnpWDBw+qtLdv35aff/5ZpXWiVatWSXV1tUoPAACAKlHiivIKgGvXrok7ljvpxqnASTs6eH/8GZAfAc0/AgKAgYXFuwCFkOFdAA+IUwEUmkUF4JE8MaVUAFQAVACDLCJ+A+A3gJh81YVTAVAB6DIleRUVABUAFQAVgIosbARS2eQvogKgAvDPmmQiqACoAKgAqABUNKECUNnkL6ICoALwz5pkIqgAqACoAKgAVDQpyQrAnc6adpswYYL6FFw31unTp0tnZ6dq2C0tLdLc3KzStre3y6uvvqrSOtHx48elsrJSrdcKd+/eLcuXL1fJR40aJefPn1dpneiBBx6QiooKlT7knwFnzpwply5dUo0jpMidwKxtJQkA7c1nSRcKAL736E7jdW/j5all5VTgPHn2v7ECgIzMGgCwTwQAsHsHAOzeJRoJAOx2AgC7dwDA7l2ikQDAbicAsHsHAOzeJRoJAOx2AgC7dwDA7l2ikQDAbicAsHsHAOzeJRoJAOx2AgC7dwDA7l2ikQDAbicAsHsHAOzeJRoJAOx2AgC7dwDA7l2ikQDAbicAsHsHAOzeJRoJAOx2AgC7d7kAwNixY2Xy5Mn2u8xB5Llz5+TGjRuqkfq8C9DR0SGNjY2qfp3oq6++Ur8LsHLlSvn2229VfS9YsEA2bdqk0vb29sozzzyj0jpRKAC4dyIeffRR9TjyKPz111/l6tWrqqGndiioanRlJPIBgO+HQXxOBW5qahJ32KemOQi1tbVppP3vIrh3ErQtFAC01y8XHQDIyEwDgMKJAADFSUwAUByfI68CAABAZJIEEACAAKZaugQAAMCSN3FjAEBcBxOKBwAAIKFU8uoGAHjZFU4MAABAuOwavGcAkIbrd7kmAAAAaaQiAEjDdQAQ6Tp/BYi0KBEBAEjExvidUAFQAcTPIv8eAIC/Z0EiAAAACJJYEZ0mCoD9+/fLyZMn07iP3F9z3rx5Mnv2bNV9XLhwQXbs2KHSOtEHH3wgI0eOVOn37NkjZ86cUWndNme3y1DTbt68KRs3btRI+zU+jwBuZ+ShQ4fUfSMccODZZ5+V+vr6SEuG9fl8miSyOwSl4IDbMuy2DodoPgAIcX36LHQAAJARdzgAAMonKQBA+cy1+k4BgNqq3AsBQO6nMPkbAADJe5rVHgFAVmcmxXEBgBTNL/KlAUCRDc/D5QBAHmYpmTECgGR8LKleAEBJTeeQNwMAymeu1XcKANRW5V4IAHI/hcnfAABI3tOs9ggAsjozKY4LAKRofpEvrQJAV1eXXLx4schDi3e5Bx98UKqrq+N1Mki0O71Xu1X24YcflkmTJqnGceXKFTl9+rRKG1L03XffyUcffRTkEq2trTJjxgxV384351+I1t7eLn/99VeIrr361G4Td512dnbK77//rupfm/8qACxfvly2bdumunBWRNqXISzjDfVdAN9TgS1jz1NMc3OzuJepQrSqqirp6ekJ0bVXnz478XPxXQCvuw8oBgABzS1S1wCg0GgA4JF4AMDDrIxKAQAAMKcmADBbl5lAAAAAzMkIAMzWZSYQAAAAczICALN1mQkEAADAnIwAwGxdZgIBAAAwJyMAMFuXmUAAAADMyQgAzNZlJhAAAABzMgIAs3WZCQQAAMCcjADAbF1mAgFARgDg9kzfunVLlRgHDhyQhQsXqrS+Ine0dV1dnSrsiy++kJUrV6q0bt/0+fPnVVon6u3tFe0WTndst/bobrYCF06Bj3dTp06Vn376Kcgcvv/+++LeYdA0l58uT7Vt9OjRWqm449pv376t0o8YMUIqKioitap3ASJ7+Y9g37594rYshmh79+6VhoYGVdfu3QX3DoOmTZw4Ubq7uzXSoBoAYLd32rRp6u8e+F7F510Yl58uT/PSAICIAIC8pOvg4wQAtjkEAADAljkZiwIAtgkBAADAljkZiwIAtgkBAADAljkZiwIAtgkBAADAljkZiwIAtgkBAADAljkZiwIAtgkBAADAljkZiwIAtgkBAADAljkZiwIAtgkBAADAljkZiwIAtgnJFQBeeOEFcae5atrZs2flxIkTGqn3RiC3xfjChQuqvn1E999/v8yZM0cdsnjxYvXR1m47a21trarvo0ePypYtW1Rat910x44dKm1I0bhx42TBggVBLuGzE9Dlp8tTbWtra9NK+09IPnXqlEr/0ksvyZIlSyK1uQJA5N0YBb47AX2OBfcZkjsj3i0+bRszZoxcv35dJXeJ1tjYqNL6fBjE7WXXfiNBdfEMinwA4Dt87Tslrt/UTgX2uamQ7wL4jMNHCwAK3QIAhX4AAI/VBAA8zPp/UioAu3chIwGAh7sAwMMsAGA3q4iRAMDDbADgYRYAsJtVxEgA4GE2APAwCwDYzSpiJADwMBsAeJgFAOxmFTESAHiYDQA8zAIAdrOKGAkAPMwGAB5mAQC7WUWMBAAeZgMAD7MAgN2sIkaWPQDcllq3tVbT3FZFt2VR27S701x/hw8fVh/eOWXKFKmpqVENw+1mq6+vV2md6Pvvv5crV66o9B0dHerDKh977DH5+OOPVf060TfffKM+JXbWrFny0EMPqfr22QoccifgmTNnxPmXdvv888/l4MGDQYbhsxMwta3ApUxAN6s9PT3qdwyc3iWme/lE01avXi3r1q3TSL01bguu9ljppqYmcTv8km4hAeB8c/6VcvMBQAgfVO8CAIBC6wHAgB8AIN6yBAB9fWoHQ7wMQQWgtv+uQgAQzz8AAADMGcQjgNm6zAQCAABgTkYAYLYuM4EAAACYkxEAmK3LTCAAAADmZAQAZusyEwgAAIA5GQGA2brMBAIAAGBORgBgti4zgQAAAJiTEQCYrctMYC4A4E6UbW1tDWKaz4GSCxculAMHDqjG8eabb8qmTZtU2kuXLsnUqVNVWic6fvy4PP744yr9mjVrZOPGjSqtrygUAEaMGCHutF9Nc/sAuru7NdJ+TWVlpQwfPlyld745/zTNLaTe3l6NtF8zatQoGTZsmFqvFd6+fVtu3LihlUsuAKC+mwwJt23bJm4Ho6Zl5VBQzVj/qwkFAPd+hva4ancqsTudWNvcewbu7MOkW2dnp7jTmrXNQcvNe9LN92U4AJD0DPzTHwAoNNbnXQAAYE9KAGD3LtFIAAAAhkooKoC/3VG9DJToyixSZwAAAACA6MUGAAzfBgz1ZaDo6SpU8BvAgB/8BuCbPVQA/zrGj4CFycNvALbF5KL4DcDuXaKRPALwCMAjQPSS4hGAR4A7soQKIHrhDKagArB7l2gkFQAVABVA9JKiAqACoAKIXidqBRWA2qqwQioAKgAqgOg1VrIVwMWLF6WrqyvaAZH+fe/u2Gxtc0dV+7zDoO339OnTsnTpUq1cnn/+efW++jfeeEOee+45Vd8//vijfPnllyrtyJEj5ZNPPlFpnWjGjBlyzz33qPQ7duyQrVu3qrQTJkzwOkHYzbf2fYf169fL7t27VeNwp0W//fbbKq0TrVixQq3dvHlz4tuoSxYAalczJDx27JjU1tYGGZHb26/9BoM7PtxtHda0rBwK6haeO605RPM5FbuhoUH27t2rHobPC0muX9d/kg0AJOlmzL4AQKGBPt8FAAC25AMANt+CRAEAADBUYlEBBFl22ekUAAAAAJCd9Vj0kQAAAAAAir7ssnNBAAAAAEB21mPRRwIAAAAAKPqyy84FAQAAAADZWY9FHwkAAAAAoOjLLjsXBAAAIJMA2L9/v5w8eTI7KyVHI5k3b556++Yvv/yi3vrqLHDHZt+8eVPlhtvZ9/TTT6u0p06dUp8K7LYCr127VtWvEy1evFgmTZqk0h86dEhc7mmaO2r83nvv1Uj7Ne+9956MHTtWpS/7nYA+BqgcLSNRS0uLNDc3B7ljdxy3O5Y7Ty2Px4L75H9JbgX2MSBPyViMsQKAQpcBQKEfuXgXAADYUQEAAMBQ2QMA7GsrF5EAAAAAgFws1TCDBAAAAACEWVu56BUAAAAAkIulGmaQAAAAAIAwaysXvQIAAAAAcrFUwwwSAAAAABBmbeWiVwAAAMoKAG575eTJk3OxOK2DPHfunNy4cUMVnhUAuO2348aNU405pMgdODpz5szEL+H7cdAjR47I+PHjVeP47LPP+r/5p2nu5OU1a9ZopP0a96FZbUvtSDCfjUC+WyG1N58lnc/XgbMCAJ9TgbPktXYsvgDQ9ut07mjyZcuWqUJ8Pwyi6vQfEQDwcSugFgAENNfYNQCwGac6FZgKoNBcAGBLtpBRAMDmLgAw+AYADKYFDgEANoMBgME3AGAwLXAIALAZDAAMvgEAg2mBQwCAzWAAYPANABhMCxwCAGwGAwCDbwDAYFrgEABgMxgAGHwDAAbTAocAAJvBAMDgGwAwmBY4BADYDAYABt8AgMG0wCEAwGZw6gCoqqqyjTzBqAkTJkhHR4e6RwAwYFVvb6888sgjau9CCd3x6JcvXw7Svc9WYOfHb7/9FmQc77zzjvzwww+qvt3x6+vXr4/Upg4An0MRI+/GKJg4caJ0d3erowHAgFXuWHJ3PHkpNx8AhPRh/vz56peS3LsLbtxRDQCICACISpPB/x0A2L3zjQQAvo4p9QBAadRdZADA7p1vJADwdUypBwBKowCA3agEIgFAAiberQsAYDeWCsDunW8kAPB1TKkHAEqjqADsRiUQCQASMJEKIFkTqQCS9XOo3gBAIK+pAOzGAgC7d76RAMDXMaUeACiN4hHAblQCkQAgARN5BEjWRCqAZP3kEaB4fv57paxUAF1dXbJhwwa1A62trXLr1i2V/uWXX5YpU6aotD6i4cOHy1NPPeUTotYeOHBAvv76a7U+lHDu3LnyxBNPhOpe3W91dbX6aHc3XjfuqMZOwAztBDx27JjU1tZGzVmm/n306NFy7dq1IGNat26drF69Okjfeey0JI8F512AgVQEAIXLEgAU+gEAAmE7K48AAAAADJXiAAAABHLA3i2PAHbvfCMBgK9jSj0VgNKou8gAgN0730gA4OuYUg8AlEYBALtRCUQCgARMvFsXAMBuLBWA3TvfSADg65hSDwCURlEB2I1KIBIAJGAiFUCyJlIBJOvnUL0BgEBeUwHYjQUAdu98IwGAr2NKfV4BUFdXJ24rbppt5MiR4k6r1bbZs2fLfffdp5KH3Aj04osvyqhRo1TjyIpo7dq1UlNTk+hw2Aqc463Abguu+x84zeb7MtDRo0fFQUDTQgLAnQLtwF/uDQAAgFhrAADEsi/1YAAAAGIlIQCIZV/qwQAAAMRKQgAQy77UgwEAAIiVhAAgln2pBwMAABArCQFALPtSDwYAACBWEgKAWPalHgwAAECsJAQAsexLPRgAAIBYSQgAYtmXejAAAACxkhAAxLIv9WAAAABiJSEAiGVf6sGpAyB1BwwDmD59unR2dqoiW1papLm5WaXNypmAjY2N0tbWphqzr8ideuzuU9Ocb84/TXPz4eZF20JtBd63b5+4D3hoW19fn1ba36/rX9OWLVsmW7dujZQCgEiL7hQAAINp/4QAgELvAIA9l1KLBAB26wEAALBnT0YiAYB9IgAAALBnT0YiAYB9IgAAALBnT0YiAYB9IgAAALBnT0YiAYB9IgAAALBnT0YiAYB9IgAAALBnT0YiAYB9IgAAALBnT0YiAYB9IgAAALBnT0YiAYB9IgBAiQNg/PjxiR9dbE+3MJFHjhyRq1evqjoPuRV4z549UllZqRqHO2H38OHDKm0etwK7+XDzom2tra3y559/quTvvvuuvPLKKyrt5cuX5cSJEyqtEzU0NKi1rl/Xv6ZNnjxZnnzyyUhp4luBI69YZoKQAPA5FrypqUl27dqlcj+PAFDd2H9EVVVV0tPTowpze+rd3vpSbAAg8KwCgEKDQz0C+E4jAPjbMQDgmzmeegAAADxTpqhyABDYbgAAAAKnWKzuAUAs+6KDAQAAiM6S9BQAILD3AAAABE6xWN0DgFj2RQcDAAAQnSXpKQBAYO8BAAAInGKxugcAseyLDgYAACA6S9JTAIDA3gMAABA4xWJ1rwLAzp07vbZZxhpRiQUvWrRI6uvrVXfV1dUlGzZsUGmdaMuWLVJRUaHSb9++Xdrb21XaWbNmyZIlS1RaX9H69evl/PnzqrC6ujp57bXXVFpf0Ycffih//PGHKsztopw7d65KmzeRCgB5uynGiwM4oHMAAOh8QoUDJekAACjJaeWmcEDnAADQ+YQKB0rSAQBQktPKTeGAzgEAoPMJFQ6UpAMAoCSnlZvCAZ0DAEDnEyocKEkHAEBJTis3hQM6B/4PhllJ/4FX+Y8AAAAASUVORK5CYII=" alt="QR Code">
+            
+        </div>
+    </div>
+
+    <!-- 工作人员模块 -->
+    <div id="staffModules" class="module">
+        <h2>工作人员功能</h2>
+        <button onclick="showSubModule('staffModules', 'infoEntry')">信息录入</button>
+        <button onclick="showSubModule('staffModules', 'badgeCreation')">证件制作</button>
+        <button onclick="showSubModule('staffModules', 'badgeDistribution')">证件分发</button>
+        <button onclick="showSubModule('staffModules', 'carManage')">用车管理</button>
+        <button onclick="showSubModule('staffModules', 'ceremonyAccess')">开幕式权限设置</button>
+
+        <div id="infoEntry" class="module">
+            <h2>信息录入</h2>
+            <form action="/submit_guest_info" method="post">
+                <label for="guest_id">嘉宾ID:</label>
+                <input type="text" id="guest_id" name="guest_id"><br><br>
+                
+                <label for="name">姓名:</label>
+                <input type="text" id="name" name="name"><br><br>
+                
+                <label for="organization">单位:</label>
+                <input type="text" id="organization" name="organization"><br><br>
+                
+                <label for="position">职务:</label>
+                <input type="text" id="position" name="position"><br><br>
+                
+                <label for="contact">联系方式:</label>
+                <input type="text" id="contact" name="contact"><br><br>
+                
+                <input type="submit" value="提交">
+            </form>
+        </div>
+
+        <div id="badgeCreation" class="module">
+            <h2>证件制作</h2>
+            <form action="/create_badge" method="post">
+                <label for="guest_id">嘉宾ID:</label>
+                <input type="text" id="guest_id" name="guest_id" placeholder="大部分时间从二维码导入"><br><br>
+                
+                <label for="badge_type">证件类型: </label>
+                <input type="text" id="badge_type" name="badge_type" placeholder="大部分时间从二维码导入"><br><br>
+                
+                <input type="submit" value="制作证件">
+            </form>
+        </div>
+
+        <div id="badgeDistribution" class="module">
+            <h2>证件分发</h2>
+            <form action="/distribute_badge" method="post">
+                <label for="badge_id">证件ID:</label>
+                <input type="text" id="badge_id" name="badge_id" placeholder="大部分时间从二维码导入"><br><br>
+                
+                <label for="guest_id">嘉宾ID:</label>
+                <input type="text" id="guest_id" name="guest_id" placeholder="大部分时间从二维码导入"><br><br>
+                
+                <input type="submit" value="分发证件">
+            </form>
+        </div>
+        
+        <!-- 用车管理 -->
+        <div id="carManage" class="module">
+            <h2>用车管理</h2>
+            <!-- 用车管理内容 -->
+        <form>
+            <label for="guest_id">嘉宾ID:</label>
+            <input type="text" id="guest_id" name="guest_id"><br><br>
+            <label for="vehicle_type">车辆类型:</label>
+            <input type="text" id="vehicle_type" name="vehicle_type"><br><br>
+            <label for="use_time">用车时间:</label>
+            <input type="datetime-local" id="use_time" name="use_time"><br><br>
+            <input type="submit" value="安排用车">
+        </form>
+        </div>
+        
+
+        <div id="ceremonyAccess" class="module">
+            <h2>开幕式权限设置</h2>
+            <!-- 开幕式权限设置内容 -->
+             <form action="/set_ceremony_access" method="post">
+        <label for="guest_id">嘉宾ID:</label>
+        <input type="text" id="guest_id" name="guest_id"><br><br>
+        
+        <label for="ceremony_access">开幕式权限:</label>
+        <select id="ceremony_access" name="ceremony_access">
+            <option value="allowed">允许进入</option>
+            <option value="denied">禁止进入</option>
+        </select><br><br>
+        
+        <input type="submit" value="设置权限">
+    </form>
+        </div>
+    </div>
+</body>
+</html>

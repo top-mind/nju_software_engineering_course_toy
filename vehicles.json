@@ -1,0 +1,18 @@
+{
+  "vehicle_arrangements": [
+    {
+      "id": "V001",
+      "guest_id": "G001",
+      "vehicle_type": "商务车",
+      "pickup_time": "2024/11/28 21:42",
+      "status": "已安排"
+    },
+    {
+      "id": "V002",
+      "guest_id": "G002",
+      "vehicle_type": "轿车",
+      "pickup_time": "2024/11/29 13:44",
+      "status": "已完成"
+    }
+  ]
+}

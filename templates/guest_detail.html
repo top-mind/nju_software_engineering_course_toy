@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>嘉宾详情</title>
+    <meta charset="UTF-8">
+    <style>
+        .container {
+            max-width: 800px;
+            margin: 20px auto;
+            padding: 20px;
+        }
+        .info-section {
+            margin-bottom: 20px;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        .schedule-item {
+            margin-bottom: 10px;
+            padding: 10px;
+            background-color: #f5f5f5;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>嘉宾信息</h2>
+        <div id="guestInfo" class="info-section">
+            <h3>基本信息</h3>
+            <div id="basicInfo"></div>
+        </div>
+        
+        <div class="info-section">
+            <h3>日程安排</h3>
+            <div id="scheduleInfo"></div>
+        </div>
+
+        <div class="info-section">
+            <h3>接待方案</h3>
+            <div id="receptionInfo"></div>
+        </div>
+    </div>
+
+    <script>
+        async function loadGuestDetail() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const guestId = urlParams.get('id');
+
+            try {
+                const response = await fetch(`/api/guests/${guestId}`);
+                const guest = await response.json();
+                
+                document.getElementById('basicInfo').innerHTML = `
+                    <p>姓名：${guest.name}</p>
+                    <p>单位：${guest.organization}</p>
+                    <p>职位：${guest.position}</p>
+                    <p>联系方式：${guest.contact}</p>
+                `;
+
+                document.getElementById('scheduleInfo').innerHTML = guest.schedule.map(item => `
+                    <div class="schedule-item">
+                        <p>日期：${item.date}</p>
+                        <p>时间：${item.time}</p>
+                        <p>活动：${item.activity}</p>
+                        <p>地点：${item.location}</p>
+                    </div>
+                `).join('');
+
+                document.getElementById('receptionInfo').innerHTML = `
+                    <p>接待人员：${guest.reception.staff}</p>
+                    <p>联系方式：${guest.reception.contact}</p>
+                    <p>接待安排：${guest.reception.arrangement}</p>
+                `;
+            } catch (error) {
+                alert('加载嘉宾信息失败');
+            }
+        }
+
+        loadGuestDetail();
+    </script>
+</body>
+</html> 

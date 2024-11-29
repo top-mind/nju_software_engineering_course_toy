@@ -1,0 +1,393 @@
+<script>
+    // 检查登录状态
+    window.onload = function() {
+        const userInfo = JSON.parse(localStorage.getItem('userInfo'));
+        if (!userInfo || userInfo.user_type !== 'staff') {
+            window.top.location.href = '/';
+            return;
+        }
+    }
+</script>
+<!DOCTYPE html>
+<html>
+<head>
+    <title>用车管理</title>
+    <meta charset="UTF-8">
+    <style>
+        .container {
+            max-width: 1000px;
+            margin: 20px auto;
+            padding: 20px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+        th, td {
+            padding: 10px;
+            border: 1px solid #ddd;
+            text-align: left;
+        }
+        th {
+            background-color: #f5f5f5;
+        }
+        .btn {
+            padding: 5px 10px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-right: 5px;
+        }
+        .btn-primary {
+            background-color: #007bff;
+            color: white;
+        }
+        .btn-warning {
+            background-color: #ffc107;
+            color: black;
+        }
+        .btn-danger {
+            background-color: #dc3545;
+            color: white;
+        }
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+        }
+        .modal-content {
+            background-color: white;
+            margin: 15% auto;
+            padding: 20px;
+            width: 50%;
+            border-radius: 5px;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+        }
+        .form-group input, .form-group select {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        .select-with-search {
+            position: relative;
+        }
+        
+        .select-with-search input {
+            width: 100%;
+            padding: 8px;
+            margin-bottom: 5px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        
+        .select-with-search select {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            max-height: 150px;
+            overflow-y: auto;
+        }
+        
+        .select-with-search select option {
+            padding: 8px;
+            cursor: pointer;
+        }
+        
+        .select-with-search select option:hover {
+            background-color: #f0f0f0;
+        }
+
+        /* 添加高亮样式 */
+        .highlight {
+            background-color: #e6f3ff;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>用车管理</h2>
+        <button class="btn btn-primary" onclick="showAddModal()">添加用车安排</button>
+        <table>
+            <thead>
+                <tr>
+                    <th>嘉宾姓名</th>
+                    <th>车辆类型</th>
+                    <th>用车时间</th>
+                    <th>状态</th>
+                    <th>操作</th>
+                </tr>
+            </thead>
+            <tbody id="vehicleList"></tbody>
+        </table>
+    </div>
+
+    <!-- 添加/编辑用车安排的模态框 -->
+    <div id="vehicleModal" class="modal">
+        <div class="modal-content">
+            <h3 id="modalTitle">添加用车安排</h3>
+            <form id="vehicleForm">
+                <input type="hidden" id="vehicleId">
+                <div class="form-group">
+                    <label>选择嘉宾：</label>
+                    <div class="select-with-search">
+                        <input type="text" id="guestSearch" placeholder="搜索嘉宾..." onkeyup="filterGuests()">
+                        <select id="guestId" required size="5"></select>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>车辆类型：</label>
+                    <select id="vehicleType" required>
+                        <option value="商务车">商务车</option>
+                        <option value="轿车">轿车</option>
+                        <option value="面包车">面包车</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>用车时间：</label>
+                    <input type="datetime-local" id="pickupTime" required>
+                </div>
+                <div class="form-group">
+                    <label>状态：</label>
+                    <select id="status">
+                        <option value="已安排">已安排</option>
+                        <option value="已完成">已完成</option>
+                        <option value="已取消">已取消</option>
+                    </select>
+                </div>
+                <button type="submit" class="btn btn-primary">保存</button>
+                <button type="button" class="btn btn-danger" onclick="closeModal()">取消</button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        const modal = document.getElementById('vehicleModal');
+        let currentVehicleId = null;
+        let guestsList = []; // 存储所有嘉宾数据
+
+        // 加载嘉宾列表
+        async function loadGuests() {
+            try {
+                const response = await fetch('/api/guests');
+                const guests = await response.json();
+                guestsList = guests; // 保存完整的嘉宾列表
+                
+                updateGuestSelect(guests);
+            } catch (error) {
+                alert('加载嘉宾列表失败');
+            }
+        }
+
+        function updateGuestSelect(guests) {
+            const guestSelect = document.getElementById('guestId');
+            guestSelect.innerHTML = guests.map(guest => 
+                `<option value="${guest.guest_id}" 
+                         data-name="${guest.name}"
+                         data-org="${guest.organization}"
+                         data-position="${guest.position}">
+                    ${guest.name} - ${guest.organization} - ${guest.position}
+                </option>`
+            ).join('');
+        }
+
+        // 添加搜索过滤功能
+        function filterGuests() {
+            const searchText = document.getElementById('guestSearch').value.toLowerCase();
+            const filteredGuests = guestsList.filter(guest => {
+                const searchString = `${guest.name} ${guest.organization} ${guest.position}`.toLowerCase();
+                return searchString.includes(searchText);
+            });
+            
+            updateGuestSelect(filteredGuests);
+
+            // 如果只有一个匹配项，自动选中
+            const guestSelect = document.getElementById('guestId');
+            if (filteredGuests.length === 1) {
+                guestSelect.selectedIndex = 0;
+            }
+        }
+
+        // 添加选择事件处理
+        document.getElementById('guestId').addEventListener('change', function() {
+            const selectedOption = this.options[this.selectedIndex];
+            document.getElementById('guestSearch').value = selectedOption.text;
+        });
+
+        // 加载用车安排列表
+        async function loadVehicles() {
+            try {
+                const response = await fetch('/api/vehicles');
+                const vehicles = await response.json();
+                const vehicleList = document.getElementById('vehicleList');
+                
+                vehicleList.innerHTML = vehicles.map(vehicle => `
+                    <tr>
+                        <td>${vehicle.guest_name}</td>
+                        <td>${vehicle.vehicle_type}</td>
+                        <td>${vehicle.pickup_time}</td>
+                        <td>${vehicle.status}</td>
+                        <td>
+                            <button class="btn btn-warning" onclick="editVehicle('${vehicle.id}')">编辑</button>
+                            <button class="btn btn-danger" onclick="deleteVehicle('${vehicle.id}')">删除</button>
+                        </td>
+                    </tr>
+                `).join('');
+            } catch (error) {
+                alert('加载用车安排失败');
+            }
+        }
+
+        function showAddModal() {
+            document.getElementById('modalTitle').textContent = '添加用车安排';
+            document.getElementById('vehicleForm').reset();
+            document.getElementById('guestSearch').value = ''; // 清空搜索框
+            updateGuestSelect(guestsList); // 重置嘉宾列表
+            currentVehicleId = null;
+            modal.style.display = 'block';
+        }
+
+        async function editVehicle(vehicleId) {
+            try {
+                const response = await fetch(`/api/vehicles/${vehicleId}`);
+                if (!response.ok) {
+                    throw new Error('获取数据失败');
+                }
+                const vehicle = await response.json();
+                
+                document.getElementById('modalTitle').textContent = '编辑用车安排';
+                
+                // 更新嘉宾选择和搜索框
+                const guestSelect = document.getElementById('guestId');
+                guestSelect.value = vehicle.guest_id;
+                const selectedOption = guestSelect.options[guestSelect.selectedIndex];
+                if (selectedOption) {
+                    document.getElementById('guestSearch').value = selectedOption.text;
+                }
+                
+                document.getElementById('vehicleType').value = vehicle.vehicle_type;
+                
+                // 转换日期时间格式
+                const dateTime = vehicle.pickup_time.split(' ');
+                const date = dateTime[0].replace(/\//g, '-');
+                const time = dateTime[1];
+                const formattedDateTime = `${date}T${time}`;
+                
+                document.getElementById('pickupTime').value = formattedDateTime;
+                document.getElementById('status').value = vehicle.status;
+                
+                currentVehicleId = vehicleId;
+                modal.style.display = 'block';
+            } catch (error) {
+                alert('获取用车安排失败');
+                console.error(error);
+            }
+        }
+
+        function formatDateTime(dateTimeStr) {
+            try {
+                const [date, time] = dateTimeStr.split(' ');
+                const [year, month, day] = date.split('/');
+                return `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}T${time}`;
+            } catch (error) {
+                console.error('日期格式化错误:', error);
+                return '';
+            }
+        }
+
+        async function deleteVehicle(vehicleId) {
+            if (confirm('确定要删除该用车安排吗？')) {
+                try {
+                    const response = await fetch(`/api/vehicles/${vehicleId}`, {
+                        method: 'DELETE'
+                    });
+                    
+                    if (response.ok) {
+                        alert('删除成功');
+                        loadVehicles();
+                    } else {
+                        alert('删除失败');
+                    }
+                } catch (error) {
+                    alert('删除失败');
+                }
+            }
+        }
+
+        function closeModal() {
+            modal.style.display = 'none';
+        }
+
+        document.getElementById('vehicleForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const pickupTime = new Date(document.getElementById('pickupTime').value)
+                .toLocaleString('zh-CN', {
+                    year: 'numeric',
+                    month: '2-digit',
+                    day: '2-digit',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                })
+                .replace(/\//g, '/');
+
+            const vehicleData = {
+                guest_id: document.getElementById('guestId').value,
+                vehicle_type: document.getElementById('vehicleType').value,
+                pickup_time: pickupTime,
+                status: document.getElementById('status').value
+            };
+
+            try {
+                const url = currentVehicleId ? 
+                    `/api/vehicles/${currentVehicleId}` : 
+                    '/api/vehicles';
+                
+                const method = currentVehicleId ? 'PUT' : 'POST';
+
+                const response = await fetch(url, {
+                    method: method,
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(vehicleData)
+                });
+
+                if (response.ok) {
+                    alert(currentVehicleId ? '更新成功' : '添加成功');
+                    closeModal();
+                    loadVehicles();
+                } else {
+                    alert(currentVehicleId ? '更新失败' : '添加失败');
+                }
+            } catch (error) {
+                alert('操作失败');
+            }
+        });
+
+        // 点击模态框外部关闭
+        window.onclick = function(event) {
+            if (event.target == modal) {
+                closeModal();
+            }
+        }
+
+        // 页面加载时获取数据
+        loadGuests();
+        loadVehicles();
+    </script>
+</body>
+</html>
+

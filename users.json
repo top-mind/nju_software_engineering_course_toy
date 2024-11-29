@@ -1,0 +1,99 @@
+{
+  "guests": [
+    {
+      "username": "1",
+      "password": "1",
+      "guest_id": "G001",
+      "name": "张三",
+      "organization": "蓝鲸大学",
+      "position": "教授",
+      "contact": "13800138000",
+      "badge_printed": true,
+      "print_time": null,
+      "print_history": [
+        {
+          "time": "2024-11-29 22:09:34",
+          "is_reprint": false
+        },
+        {
+          "time": "2024-11-29 22:10:11",
+          "is_reprint": true
+        },
+        {
+          "time": "2024-11-29 22:11:07",
+          "is_reprint": true
+        },
+        {
+          "time": "2024-11-29 22:11:43",
+          "is_reprint": true
+        },
+        {
+          "time": "2024-11-29 22:15:37",
+          "is_reprint": true
+        },
+        {
+          "time": "2024-11-29 22:18:14",
+          "is_reprint": true
+        },
+        {
+          "time": "2024-11-29 22:18:24",
+          "is_reprint": true
+        },
+        {
+          "time": "2024-11-29 22:19:19",
+          "is_reprint": true
+        },
+        {
+          "time": "2024-11-29 22:20:37",
+          "is_reprint": true
+        },
+        {
+          "time": "2024-11-29 22:21:38",
+          "is_reprint": true
+        },
+        {
+          "time": "2024-11-29 22:24:01",
+          "is_reprint": true
+        }
+      ],
+      "last_print_time": "2024-11-29 22:24:01",
+      "opening_ceremony": false
+    },
+    {
+      "username": "2",
+      "password": "1",
+      "guest_id": "G002",
+      "name": "李四",
+      "organization": "哪个单位",
+      "position": "总经理",
+      "contact": "13900139000",
+      "badge_printed": true,
+      "print_time": "2024-11-29 22:03:31",
+      "print_history": [
+        {
+          "time": "2024-11-29 22:09:20",
+          "is_reprint": true
+        },
+        {
+          "time": "2024-11-29 22:18:24",
+          "is_reprint": true
+        }
+      ],
+      "last_print_time": "2024-11-29 22:18:24"
+    }
+  ],
+  "staff": [
+    {
+      "username": "1",
+      "password": "1",
+      "name": "工作人员1",
+      "role": "admin"
+    },
+    {
+      "username": "2",
+      "password": "2",
+      "name": "工作人员2",
+      "role": "operator"
+    }
+  ]
+}
