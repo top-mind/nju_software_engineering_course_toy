@@ -381,28 +381,15 @@ def print_badges():
     try:
         data = request.json
         guest_ids = data.get('guest_ids', [])
-        is_reprint = data.get('is_reprint', False)
         
         users = load_users()
         current_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
         
-        # 更新打印状态和历史记录
+        # 只更新打印状态
         for guest in users['guests']:
             if guest['guest_id'] in guest_ids:
-                # 初始化打印历史记录列表（如果不存在）
-                if 'print_history' not in guest:
-                    guest['print_history'] = []
-                
-                # 添加新的打印记录
-                print_record = {
-                    'time': current_time,
-                    'is_reprint': is_reprint
-                }
-                guest['print_history'].append(print_record)
-                
-                # 更新打印状态
                 guest['badge_printed'] = True
-                guest['last_print_time'] = current_time
+                guest['print_time'] = current_time
         
         save_users(users)
         return jsonify({
